@@ -1,0 +1,6 @@
+exportPattern("^[[:alpha:]]+")
+import(class)
+import(utils)
+import(stats)
+import(kohonen)
+import(graphics)

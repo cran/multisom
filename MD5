@@ -1,0 +1,8 @@
+279f3eb32cfff2a3cdb551ad01f389fa *DESCRIPTION
+858840361fb1c89fc1199babf619e933 *NAMESPACE
+a5c020db66515977c02256a67a4193e9 *R/BatchSOM.R
+90d2b88f341cb2bdb0697dc0d34bccc1 *R/multisom-batch.R
+9ae6f52c0b019f312daeb994847495a5 *R/multisom-stochastic.R
+9e85281dd36deb2cdc88dfe258575073 *man/BatchSOM.Rd
+744ed60b69f1aeb324346e895b3afd4a *man/multisom-batch.Rd
+ee1fe23bd57a8699387f0d7dd75bd766 *man/multisom-stochastic.Rd
