@@ -1,8 +1,8 @@
-multisom.batch <-function(data= NULL,xheight, xwidth,
-                          topo= c("rectangular", "hexagonal"),
-                          min.radius=0.0001,max.radius=0.002,
-                          maxit=1000,init=c("random","sample","linear"),
-                          radius.type=c("gaussian","bubble","cutgauss","ep"),index="all")
+multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
+                               topo = c("rectangular", "hexagonal"),
+                               rlen = 100,alpha = c(0.05, 0.01),
+                               radius = c(2, 1.5, 1.2, 1), index = "all")
+
 {
 
   set.seed(10)
@@ -24,7 +24,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
   {
     stop("\n","data matrix is needed")
   }
-  else{
+  else
+  {
     data <- as.matrix(data)
     numberObsBefore <- dim(data)[1]
     data <- na.omit(data) # returns the object with incomplete cases removed
@@ -42,6 +43,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
       for (i in 1:sizeEigenTT)
       {
         if (eigenValues[i] < 0) {
+          #cat(paste("There are only", numberObsAfter,"nonmissing observations out of a possible", numberObsBefore ,"observations."))
           stop("The TSS matrix is indefinite. There must be too many missing values. The index cannot be calculated.")
         }
       }
@@ -66,21 +68,25 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
   #        BALL, CH, HARTIGAN and RATKOWSKY     #
   #                                             #
   ###############################################
-
   gss <- function(x, cl, d)
   {
     n <- length(cl)
     k <- max(cl)
     centers <- matrix(nrow = k, ncol = ncol(x))
-    for (i in 1:k){
+    for (i in 1:k)
+    {
 
-      if (ncol(x) == 1){
+      if (ncol(x) == 1)
+      {
         centers[i, ] <- mean(x[cl == i, ])
       }
-      if (is.null(dim(x[cl == i, ]))){
+      if (is.null(dim(x[cl == i, ])))
+      {
         bb <- matrix(x[cl == i, ],byrow=FALSE,nrow=1,ncol=ncol(x))
         centers[i, ] <- apply(bb, 2, mean)
-      }else {
+      }
+      else
+      {
         centers[i, ] <- apply(x[cl == i, ], 2, mean)
       }
 
@@ -120,8 +126,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     zvargss <- list(vartss = vartss, varbgss = varbgss)
     return(zvargss)
   }
-  varwithinss <- function(x, centers, cluster)
-  {
+  varwithinss <- function(x, centers, cluster) {
     nrow <- dim(centers)[1]
     nvar <- dim(x)[2]
     varwithins <- matrix(0, nrow, nvar)
@@ -138,7 +143,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ##############################
   #                            #
-  #           SDbw             #
+  #            SDbw            #
   #                            #
   ##############################
 
@@ -297,15 +302,15 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   }
 
+
   ########################################################################
   #                                                                      #
-  #                                 DB                                   #
+  #                                DB                                    #
   #                                                                      #
   ########################################################################
 
   Indice.db <- function (x, cl, d = NULL, centrotypes = "centroids", p = 2, q = 2)
   {
-
     if (sum(c("centroids") == centrotypes) == 0)
       stop("Wrong centrotypes argument")
     if (!is.null(d)) {
@@ -324,13 +329,13 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     centers <- matrix(nrow = k, ncol = ncol(x))
     if (centrotypes == "centroids") {
       for (i in 1:k) {
-        for (j in 1:ncol(x)) {
-
+        for (j in 1:ncol(x))
+        {
           if (is.na(match(i,cl)))
           {
             centers[i, j] <- 0
           }
-          else {
+          else{
             centers[i, j] <- mean(x[cl ==i, j])
           }
         }
@@ -368,12 +373,13 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ########################################################################
   #                                                                      #
-  #                                DUNN                                  #
+  #                               DUNN                                   #
   #                                                                      #
   ########################################################################
 
   Indice.dunn <- function(distance=NULL, clusters, Data=NULL, method="euclidean")
   {
+
     if (is.null(distance) & is.null(Data)) stop("One of 'distance' or 'Data' is required")
     if (is.null(distance)) distance <- as.matrix(dist(Data, method=method))
     if (class(distance)=="dist") distance <- as.matrix(distance)
@@ -392,13 +398,13 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
         }
       }
     }
-    dunn <- min(interClust,na.rm=TRUE)/max(intraClust)
+    dunn <- min(interClust,na.rm=TRUE)/max(intraClust,na.rm=TRUE)
     return(dunn)
   }
 
   ########################################################################
   #                                                                      #
-  #                         SILHOUETTE                                   #
+  #                           SILHOUETTE                                 #
   #                                                                      #
   ########################################################################
 
@@ -422,11 +428,11 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
             ai<-sum(d[i,cl==n[k]])/(sum(cl==n[k])-1)
             dips<-NULL
             for(j in 1:nc)
-              if (cl[i]!=j)
+              if (cl[i]!=n[j])
                 if(sum(cl==n[j])!=1)
-                  dips<-cbind(dips,c( (sum(d[i,cl==n[j]])) /(sum(cl==n[j])) ))
+                  dips<-cbind(dips,c((sum(d[i,cl==n[j]])) /(sum(cl==n[j])) ))
             else
-              dips<-cbind(dips,c( (sum(d[i,cl==n[j]]))))
+              dips<-cbind(dips,c((sum(d[i,cl==n[j]]))))
             bi<-min(dips)
             Sil<-Sil+(bi-ai)/max(c(ai,bi))
           }
@@ -438,16 +444,14 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     Si/length(cl)
 
   }
-
   ########################################################################
   #                                                                      #
-  #                             POINT-BISERIAL                           #
+  #                           POINT-BISERIAL                             #
   #                                                                      #
   ########################################################################
 
   Indice.ptbiserial <- function (x,md,cl1)
   {
-
     nn <- dim(x)[1]
     pp <- dim(x)[2]
 
@@ -457,9 +461,11 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     pb <- array(0,c(nbr,2))
 
     m3 <- 1
-    for (m1 in 2:nn){
+    for (m1 in 2:nn)
+    {
       m12 <- m1-1
-      for (m2 in 1:m12){
+      for (m2 in 1:m12)
+      {
         if (cl1[m1]==cl1[m2]) m01[m1,m2]<-0
         if (cl1[m1]!=cl1[m2]) m01[m1,m2]<-1
         pb[m3,1] <- m01[m1,m2]
@@ -471,8 +477,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     y <- pb[,1]
     x <- pb[,2]
 
-    biserial.cor <- function (x, y, use = c("all.obs", "complete.obs"), level = 1){
-
+    biserial.cor <- function (x, y, use = c("all.obs", "complete.obs"), level = 1)
+    {
       if (!is.numeric(x))
         stop("'x' must be a numeric variable.\n")
       y <- as.factor(y)
@@ -530,21 +536,20 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ########################################################################
   #                                                                      #
-  #                              C-INDEX                                 #
+  #                               C-INDEX                                #
   #                                                                      #
   ########################################################################
 
   Indice.cindex <- function (d, cl)
   {
-
     d <- data.matrix(d)
     DU <- 0
     r <- 0
     v_max <- array(1, max(cl))
     v_min <- array(1, max(cl))
-    for (i in 1:max(cl)){
+    for (i in 1:max(cl)) {
       n <- sum(cl == i)
-      if (n > 1){
+      if (n > 1) {
         t <- d[cl == i, cl == i]
         DU = DU + sum(t)/2
         v_max[i] = max(t)
@@ -564,13 +569,11 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ########################################################################
   #                                                                      #
-  #                            RATKOWSKY                                 #
+  #                              RATKOWSKY                               #
   #                                                                      #
   ########################################################################
 
-  Indice.ratkowsky <- function(x, cl, d, centrotypes = "centroids")
-  {
-
+  Indice.ratkowsky <- function(x, cl, d, centrotypes = "centroids"){
     n <- unique(cl)
     qq <- length(n)
     centers <- gss(x, cl, d)$centers
@@ -589,7 +592,6 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   Indice.mcclain <- function (cl1,md)
   {
-
     m <- unique(cl1)
     cn1 <- length(m)
     n1 <- length(cl1)
@@ -597,12 +599,12 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     average.distance <- median.distance <- separation <- cluster.size <- within.dist1 <- between.dist1 <- numeric(0)
     separation.matrix <- matrix(0, ncol = cn1, nrow = cn1)
     di <- list()
-    for (u in 1:cn1){
-
+    for (u in 1:cn1)
+    {
       cluster.size[u] <- sum(cl1 ==m[u])
-      du <- as.dist(dmat[cl1 == m[u], cl1 == m[u]])
+      du <- as.dist(dmat[cl == m[u], cl == m[u]])
       within.dist1 <- c(within.dist1, du)
-      for (v in 1:cn1){
+      for (v in 1:cn1) {
         if (v != u) {
           suv <- dmat[cl1 == m[u], cl1 == m[v]]
           if (u < v) {
@@ -638,18 +640,16 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     average.distance <- median.distance <- separation <- cluster.size <- within.dist1 <- between.dist1 <- numeric(0)
     separation.matrix <- matrix(0, ncol = cn1, nrow = cn1)
     di <- list()
-    for (u in 1:cn1){
-      x <- n[u]
-      cluster.size[u] <- sum(cl1 == x)
-      du <- as.dist(dmat[cl1 == x, cl1 == x])
+    for (u in 1:cn1) {
+      cluster.size[u] <- sum(cl1 == n[u])
+      du <- as.dist(dmat[cl1 == n[u], cl1 == n[u]])
       within.dist1 <- c(within.dist1, du)
       average.distance[u] <- mean(du)
       median.distance[u] <- median(du)
       bv <- numeric(0)
-      for (v in 1:cn1){
+      for (v in 1:cn1) {
         if (v != u) {
-          x1 <- n[v]
-          suv <- dmat[cl1 == x, cl1 == x1]
+          suv <- dmat[cl1 == n[u], cl1 == n[v]]
           bv <- c(bv, suv)
           if (u < v) {
             separation.matrix[u, v] <- separation.matrix[v,u] <- min(suv)
@@ -662,8 +662,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     nwithin1 <- length(within.dist1)
 
     s.plus <- s.moins <- 0
-    for (k in 1: nwithin1){
-
+    for (k in 1: nwithin1)
+    {
       s.plus <- s.plus+(colSums(outer(between.dist1,within.dist1[k], ">")))
       s.moins <- s.moins+(colSums(outer(between.dist1,within.dist1[k], "<")))
     }
@@ -690,17 +690,15 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     separation.matrix <- matrix(0, ncol = cn1, nrow = cn1)
     di <- list()
     for (u in 1:cn1) {
-      x <-  n[u]
-      cluster.size[u] <- sum(cl1 == x)
-      du <- as.dist(dmat[cl1 == x, cl1 == x])
+      cluster.size[u] <- sum(cl1 == n[u])
+      du <- as.dist(dmat[cl1 == n[u], cl1 == n[u]])
       within.dist1 <- c(within.dist1, du)
       average.distance[u] <- mean(du)
       median.distance[u] <- median(du)
       bv <- numeric(0)
       for (v in 1:cn1) {
         if (v != u) {
-          x1 <- n[v]
-          suv <- dmat[cl1 == x, cl1 == x1]
+          suv <- dmat[cl1 == n[u], cl1 == n[v]]
           bv <- c(bv, suv)
           if (u < v) {
             separation.matrix[u, v] <- separation.matrix[v,u] <- min(suv)
@@ -713,8 +711,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     nwithin1 <- length(within.dist1)
 
     s.plus <- s.moins <- 0
-    for (k in 1: nwithin1){
-
+    for (k in 1: nwithin1)
+    {
       s.plus <- s.plus+(colSums(outer(between.dist1,within.dist1[k], ">")))
       s.moins <- s.moins+(colSums(outer(between.dist1,within.dist1[k], "<")))
     }
@@ -740,17 +738,15 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     separation.matrix <- matrix(0, ncol = cn1, nrow = cn1)
     di <- list()
     for (u in 1:cn1) {
-      x <-  n[u]
-      cluster.size[u] <- sum(cl1 == x)
-      du <- as.dist(dmat[cl1 == x, cl1 == x])
+      cluster.size[u] <- sum(cl1 == n[u])
+      du <- as.dist(dmat[cl1 == n[u], cl1 == n[u]])
       within.dist1 <- c(within.dist1, du)
       average.distance[u] <- mean(du)
       median.distance[u] <- median(du)
       bv <- numeric(0)
       for (v in 1:cn1) {
         if (v != u) {
-          x1 <- n[v]
-          suv <- dmat[cl1 == x, cl1 == x1]
+          suv <- dmat[cl1 == n[u], cl1 == n[v]]
           bv <- c(bv, suv)
           if (u < v) {
             separation.matrix[u, v] <- separation.matrix[v,u] <- min(suv)
@@ -764,8 +760,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     nbetween1 <- length(between.dist1)
 
     s.plus <- s.moins <- 0
-    for (k in 1: nwithin1){
-
+    for (k in 1: nwithin1)
+    {
       s.plus <- s.plus+(colSums(outer(between.dist1,within.dist1[k], ">")))
       s.moins <- s.moins+(colSums(outer(between.dist1,within.dist1[k], "<")))
     }
@@ -778,13 +774,12 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ########################################################################
   #                                                                      #
-  #       CCC,SCOTT,MARRIOT,TRCOVW,TRACEW,FRIEDMAN,RUBIN                 #
+  #         CCC,SCOTT,MARRIOT,TRCOVW,TRACEW,FRIEDMAN,RUBIN               #
   #                                                                      #
   ########################################################################
 
   Indices.WBT <- function(x,cl,P,s,vv)
   {
-
     n <- dim(x)[1]
     pp <- dim(x)[2]
     nc <- unique(cl)
@@ -793,7 +788,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     clX <- as.matrix(cl)
 
     for (i in 1:n)
-      for (j in 1:qq){
+      for (j in 1:qq)
+      {
         z[i,j]==0
         if (clX[i,1]== nc[j])
         {z[i,j]=1}
@@ -810,8 +806,6 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     else {cat("Error: division by zero!")}
     friedman <- sum(diag(solve(W)*B))
     rubin <- sum(diag(P))/sum(diag(W))
-
-
 
     R2 <- 1-sum(diag(W))/sum(diag(P))
     v1 <- 1
@@ -830,7 +824,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
       b2 <- sum(u[p1+1:pp]^2/(n+u[p1+1:pp]),na.rm=TRUE)
       E_R2 <- 1-((b1+b2)/sum(u^2))*((n-qq)^2/n)*(1+4/n)
       ccc <- log((1-E_R2)/(1-R2))*(sqrt(n*p1/2)/((0.001+E_R2)^1.2))
-    }else {
+    }else
+    {
       b1 <- sum(1/(n+u))
       E_R2 <- 1-(b1/sum(u^2))*((n-qq)^2/n)*(1+4/n)
       ccc <- log((1-E_R2)/(1-R2))*(sqrt(n*pp/2)/((0.001+E_R2)^1.2))
@@ -845,9 +840,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
   #                                                                      #
   ########################################################################
 
-  Indice.ball <- function(x, cl, d = NULL, centrotypes = "centroids")
-  {
-
+  Indice.ball <- function(x, cl, d = NULL, centrotypes = "centroids"){
     wgssB <- gss(x, cl, d)$wgss
     qq <- length(unique(cl))
     ball <- wgssB/qq
@@ -856,29 +849,27 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ########################################################################
   #                                                                      #
-  #                             SDBW                                     #
+  #                              SDBW                                    #
   #                                                                      #
   ########################################################################
 
   Indice.sdbw<-function(x, cl)
   {
-
     x <- as.matrix(x)
-    Scatt <- Average.scattering(cl,x)$scatt
-    Dens.bw <- density.bw(cl,x)
-    SDbw <- Scatt+Dens.bw
+    Scatt<-Average.scattering(cl,x)$scatt
+    Dens.bw<-density.bw(cl,x)
+    SDbw<-Scatt+Dens.bw
     return(SDbw)
   }
 
   ########################################################################
   #                                                                      #
-  #                             D INDEX                                  #
+  #                              D INDEX                                 #
   #                                                                      #
   ########################################################################
 
   Indice.dindex<- function(cl, x)
   {
-
     x <- as.matrix(x)
     distance<-density.clusters(cl, x)$distance
     n<-length(distance)
@@ -891,7 +882,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ########################################################################
   #                                                                      #
-  #                             HUBERT                                   #
+  #                              HUBERT                                  #
   #                                                                      #
   ########################################################################
 
@@ -911,8 +902,10 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     varP<-sqrt(variance.matrix %*% variance.matrix)
 
     centers.clusters<-centers(cl,x)
-    for(i in 1:n){
-      for(u in 1:k){
+    for(i in 1:n)
+    {
+      for(u in 1:k)
+      {
         if(cl[i]==u)
           y[i,]<-centers.clusters[u,]
       }
@@ -928,7 +921,8 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     S<-0
     n1<-n-1
 
-    for(i in 1:n1){
+    for(i in 1:n1)
+    {
       j<-i+1
       while(j<=n)
       {
@@ -974,7 +968,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
   ########################################################################
   #                                                                      #
-  #                             XIE-BENI                                 #
+  #                            XIE-BENI                                  #
   #                                                                      #
   ########################################################################
 
@@ -1134,6 +1128,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
 
 
   ######################################
+
   result <- array(0, c(max_nc-1,30))
   col <- rep(0,max_nc-1)
   nb <- rep(0,max_nc-1)
@@ -1149,16 +1144,19 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
                         "tau","ccc","scott","marriot","trcovw","tracew","friedman","rubin","ball","sdbw",
                         "dindex","hubert","sv","xie-beni","hartigan","ssi","xu","rayturi","pbm","banfeld")
 
+
+
   n1<-n2<-n3<-n4<-n5<-n6<-n7<-n8<-n9<-n10<-n11<-n12<-n13<-n14<-n15<-n16<-n17<-
     n18<-n19<-n20<-n21<-n22<-n23<-n24<-n25<-n26<-n27<-n28<-n29<-n30<-1
 
   ###################################################################################
-  repeat {
-
-    res.batch <- BatchSOM(data,grid = somgrid(xheight, xwidth,topo), min.radius ,max.radius,maxit,init,radius.type)
-    codes <- res.batch$code
-    cl  <- res.batch$classif
+  repeat
+  {
+    res.som <- som(data, grid = somgrid(xheight, xwidth,topo),rlen,alpha,radius)
+    som_levels <- res.som$codes
+    cl <- res.som$unit.classif
     Dist <- dist(data, method="euclidean")
+
 
     ##################################### Indice.db###################################
     if(is.na(match(1,indice))==FALSE||is.na(match(31,indice))==FALSE)
@@ -1211,7 +1209,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     ############################## Indice.ratkowsky###############################
     if(is.na(match(7,indice))==FALSE||is.na(match(31,indice))==FALSE)
     {
-      result[n7,7]<-Indice.ratkowsky(data,cl,Dist, centrotypes = "centroids")
+      result[n7,7]<-Indice.ratkowsky(data,cl, Dist, centrotypes = "centroids")
       lis1[[n7]] <- cl
       n7 <-n7+1
     }
@@ -1232,7 +1230,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
       n9 <-n9+1
     }
 
-    ############################ Indice.gplus####################################
+    ########################### Indice.gplus####################################
     if(is.na(match(10,indice))==FALSE||is.na(match(31,indice))==FALSE)
     {
       result[n10,10] <-Indice.gplus(cl,Dist)
@@ -1379,7 +1377,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     ############################ Indice.rayturi########################################
     if(is.na(match(28,indice))==FALSE||is.na(match(31,indice))==FALSE)
     {
-      result[n28,28]<-Indice.rayturi(data,cl)
+      result[n28,28]<-Indice.rayturi(data,cl,Dist)
       lis1[[n28]] <- cl
       n28 <-n28+1
     }
@@ -1400,11 +1398,11 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
       n30 <-n30+1
     }
 
-    data<- codes
-    xheight <- xheight - 1
-    xwidth <- xwidth - 1
+    data <-som_levels
+    xheight<- xheight - 1
+    xwidth <-xwidth - 1
 
-    if (xheight ==1 & xwidth == 1)
+    if (xheight ==1  &  xwidth == 1)
 
       break
   }
@@ -1455,28 +1453,26 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     while(k <=length(m))
     {
       n1 <- m[k]
-      len <-length(which(lis1[[i]]== nc[n1]))
 
-      if(len ==1){
+      if(length(which(lis1[[i]]== nc[n1]))==1){
         c <- c-1
         m2[length(m2)+1]<- nc[n1]
       }
-      if (len > 1)
-      {
+
+      len <-length(which(lis1[[i]]== nc[n1]))
+
+      if (len > 1){
         en <- 0
         m1 <- which(lis1[[i]]==nc[n1])
-        for (nn in 1:len)
-        {
-          if((is.na(match(m1[nn],a[[i-1]]))== FALSE))
-          {
+        for (nn in 1:len){
+          if((is.na(match(m1[nn],a[[i-1]]))== FALSE)){
             en <- en +1
           }
         }
         if (en == len){
           c <-c-1
           for (nn in 1:len){
-            m <- m[-which(m ==m1[nn])]
-          }
+            m <- m[-which(m ==m1[nn])]}
           m2[length(m2)+1]<- nc[n1]
           k <-k-1
         }
@@ -1501,7 +1497,6 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     }
   }
 
-
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&#                                                                                                                      #
   #                                                                                                                      #
   #                                            Best Number of Clusters                                                   #
@@ -1525,6 +1520,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     indice.Dunn <- max(result[,2],na.rm = TRUE)
     best.nc<-nc.Dunn
   }
+
 
   nc.Silhouette<-indice.Silhouette<-0
   if(is.na(match(3,indice))==FALSE||is.na(match(31,indice))==FALSE)
@@ -1811,7 +1807,6 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     best.nc<-nc.rayturi
   }
 
-
   nc.Pbm<-indice.Pbm<-0
   if(is.na(match(29,indice))==FALSE||is.na(match(31,indice))==FALSE)
   {
@@ -1837,7 +1832,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     indice.Hubert  <- 0.00
     options(graphics.record = TRUE)
     plot(nb,result[,22], tck=0, type="b", col="red", xlab= expression(paste("Number of clusters ")), ylab= expression(paste("Hubert Statistic values")))
-    plot(Diff[,1],Diff[,10], tck=0, type="b", col="blue", xlab= expression(paste("Number of clusters ")), ylab= expression(paste("Hubert statistic second differences")))
+    plot(nb,Diff[,10], tck=0, type="b", col="blue", xlab= expression(paste("Number of clusters ")), ylab= expression(paste("Hubert statistic second differences")))
     cat(paste ("*** : The Hubert index is a graphical method of determining the number of clusters.
                In the plot of Hubert index, we seek a significant knee that corresponds to a
                significant increase of the value of the measure i.e the significant peak in Hubert
@@ -1851,7 +1846,7 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     nc.Dindex <- 0.00
     indice.Dindex<- 0.00
     plot(nb,result[,21], tck=0, type="b", col="red", xlab= expression(paste("Number of clusters ")), ylab= expression(paste("Dindex Values")))
-    plot(Diff[,1],Diff[,8], tck=0, type="b", col="blue", xlab= expression(paste("Number of clusters ")), ylab= expression(paste("Second differences Dindex Values")))
+    plot(nb,Diff[,8], tck=0, type="b", col="blue", xlab= expression(paste("Number of clusters ")), ylab= expression(paste("Second differences Dindex Values")))
     cat(paste ("*** : The D index is a graphical method of determining the number of clusters.
                In the plot of D index, we seek a significant knee (the significant peak in Dindex
                second differences plot) that corresponds to a significant increase of the value of
@@ -1931,6 +1926,49 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
     cat("*******************************************************************", "\n")
     jj <-j
     cl <-lis1[[1]]
+  }
+
+  if((is.na(match("all",index))==TRUE)&&(length(index)==1)&&
+     (is.na(match("hubert",index))==TRUE)&&(is.na(match("dindex",index))==TRUE)){
+    jj <- resultats[1,indice]
+    i <- resultats[2,indice]
+
+
+    if((is.na(match("db",index))==FALSE)||(is.na(match("dunn",index))==FALSE)||
+       (is.na(match("silhouette",index))==FALSE)||(is.na(match("ch",index))==FALSE)||
+       (is.na(match("cindex",index))==FALSE)||(is.na(match("ratkowsky",index))==FALSE)||
+       (is.na(match("mcclain",index))==FALSE)||(is.na(match("gamma",index))==FALSE)||
+       (is.na(match("gplus",index))==FALSE)||(is.na(match("tau",index))==FALSE)||
+       (is.na(match("ccc",index))==FALSE)||(is.na(match("sdbw",index))==FALSE)||
+       (is.na(match("sv",index))==FALSE)||(is.na(match("xie-beni",index))==FALSE)||
+       (is.na(match("ssi",index))==FALSE)||(is.na(match("rayturi",index))==FALSE)||
+       (is.na(match("pbm",index))==FALSE)||(is.na(match("banfeld",index))==FALSE)||
+       (is.na(match("ptbiserial",index))==FALSE)){
+
+      result<-round(result, digits=3)
+      jj1 <-as.integer(which(result[,indice]== i))
+      pos<- jj1
+
+    }
+
+    if((is.na(match("scott",index))==FALSE)||(is.na(match("marriot",index))==FALSE)||
+       (is.na(match("trcovw",index))==FALSE)||(is.na(match("tracew",index))==FALSE)||
+       (is.na(match("friedman",index))==FALSE)||(is.na(match("rubin",index))==FALSE)||
+       (is.na(match("ball",index))==FALSE)||(is.na(match("hartigan",index))==FALSE)||
+       (is.na(match("xu",index))==FALSE)){
+
+      Diff<-round(Diff, digits=3)
+      jj1 <- as.vector(which(Diff== i,arr.ind = TRUE))
+      pos<- (jj1[1])
+
+    }
+  }
+
+
+  cl <-lis1[[1]]
+  if((length(index)==1)&&(is.na(match("hubert",index))==TRUE)&&
+     (is.na(match("dindex",index))==TRUE)){
+
     par <- nrow(dataa)
     partition <- rep(0,par)
     x <-list()
@@ -2041,6 +2079,3 @@ multisom.batch <-function(data= NULL,xheight, xwidth,
   return(results.final)
 
   }
-
-
-

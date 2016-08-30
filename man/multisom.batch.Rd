@@ -146,13 +146,16 @@ Khanchouch, I., Charrad, M., & Limam, M. (2014). A Comparative Study of Multi-SO
 
 set.seed(1)
 
-x <- rbind(matrix(rnorm(150,sd=0.3),ncol=3),
-           matrix(rnorm(150,mean=1,sd=0.3),ncol=3),
-           matrix(rnorm(150,mean=2,sd=0.3),ncol=3))
+set.seed(1)
+x<- rbind(matrix(rnorm(150,sd=0.3),ncol=5),
+          matrix(rnorm(150,mean=3,sd=0.2),ncol=5),
+          matrix(rnorm(150,mean=1,sd=0.1),ncol=5),
+          matrix(rnorm(150,mean=6,sd=0.3),ncol=5),
+          matrix(rnorm(150,mean=9,sd=0.3),ncol=5))
 
-res<-multisom.batch(x,xheight= 5, xwidth= 5,"hexagonal",
-                    min.radius=0.00010,max.radius=0.002,
-                    maxit=1000,"random","gaussian","all")
+res<- multisom.batch(x,xheight= 7, xwidth= 7,"hexagonal",
+                min.radius=0.00010,max.radius=0.002,
+                maxit=1000,"random","gaussian","all")
 
 res$All.index.by.layer
 res$Best.nc
