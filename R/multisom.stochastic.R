@@ -410,10 +410,10 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
 
   Indice.silhouette<-function(d,cl,singleObject=0)
   {
-    d<-as.matrix(d)
+    d <- as.matrix(d)
     n <- unique(cl)
     nc <- length(n)
-    Si<-0
+    Si <- 0
     for(k in 1:nc)
     {
       if ((sum(cl==n[k]))<=1)
@@ -802,7 +802,7 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
     trcovw <- sum(diag(cov(W)))
     tracew <- sum(diag(W))
     if(det(W)!=0)
-      scott<-n*log(sum(diag(P))/sum(diag(W)))
+      scott <- n*log(sum(diag(P))/sum(diag(W)))
     else {cat("Error: division by zero!")}
     friedman <- sum(diag(solve(W)*B))
     rubin <- sum(diag(P))/sum(diag(W))
@@ -871,11 +871,11 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
   Indice.dindex<- function(cl, x)
   {
     x <- as.matrix(x)
-    distance<-density.clusters(cl, x)$distance
-    n<-length(distance)
+    distance <- density.clusters(cl, x)$distance
+    n <- length(distance)
     S<-0
     for(i in 1:n)
-      S<-S+distance[i]
+      S <- S + distance[i]
     inertieIntra<-S/n
     return(inertieIntra)
   }
@@ -1128,7 +1128,6 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
 
 
   ######################################
-
   result <- array(0, c(max_nc-1,30))
   col <- rep(0,max_nc-1)
   nb <- rep(0,max_nc-1)
@@ -1149,12 +1148,18 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
   n1<-n2<-n3<-n4<-n5<-n6<-n7<-n8<-n9<-n10<-n11<-n12<-n13<-n14<-n15<-n16<-n17<-
     n18<-n19<-n20<-n21<-n22<-n23<-n24<-n25<-n26<-n27<-n28<-n29<-n30<-1
 
+  data1 <- data
+  lis2 <- list()
+  lis3 <- list()
+  cf <- rep(0,nrow(data1))
+  l <- 1
   ###################################################################################
   repeat
   {
     res.som <- som(data, grid = somgrid(xheight, xwidth,topo),rlen,alpha,radius)
     som_levels <- res.som$codes
     cl <- res.som$unit.classif
+    xf <- cl
     Dist <- dist(data, method="euclidean")
 
 
@@ -1329,14 +1334,56 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
     ######################## Indice.hubert########################################
     if(is.na(match(22,indice))==FALSE||is.na(match(31,indice))==FALSE)
     {
-      result[n22,22] <-Indice.hubert(data, cl)
       lis1[[n22]] <- cl
+      lis2[[l]] <- cl
+      l <- l+1
+      if (length(lis2) > 1){
+        x <- xheight* xwidth
+        for(i in 1:x){
+          y <- i
+          j <- length(lis2)
+          repeat{
+            cl1 <- lis2[[j]]
+            if (length(y)== 1){
+              v <- which(cl1 == y)
+              y1 <- v
+            }
+            if (length(y) >= 1){
+              m <- 1
+              lis3 <- list()
+              for(l in 1:length(y)){
+                lis3[[m]] <- which(cl1== y[l])
+                m <- m+1
+              }
+              y1 <- unlist(lis3)
+            }
+            j <- j- 1
+            y <- y1
+            if( (j <= 0) | (length(y)==0))
+              break
+          }
+
+          if (length(y) !=0){
+            for( p in 1:length(y))
+            {
+              n <- y[p]
+              cf[n] <-i
+            }
+          }
+
+        }
+        cl <- cf
+
+      }
+      result[n22,22] <- Indice.hubert(data1, cl)
       n22 <-n22+1
     }
 
     ########################### Indice.sv#########################################
     if(is.na(match(23,indice))==FALSE||is.na(match(31,indice))==FALSE)
     {
+
+      cl <- xf
       result[n23,23]<-Indice.sv(cl,data)
       lis1[[n23]] <- cl
       n23 <-n23+1
@@ -1418,6 +1465,7 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
     lis[[i]]<-unique(lis1[[i]])
   }
 
+  n <- max_nc-1
   dim <- rep(0,n)
   vide <-a <- a1 <-list()
   j <- j1 <-1
@@ -1669,7 +1717,7 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
           Diff[n-min_nc+1,9] <- abs(result[n-min_nc+1,19]-result[n-min_nc,19])
           Diff[n-min_nc+1,10]<- abs(result[n-min_nc+1,22]-result[n-min_nc,22])
           Diff[n-min_nc+1,11]<- abs(result[n-min_nc+1,25]-result[n-min_nc,25]) # Hartigan
-          Diff[n-min_nc+1,12]<- abs(result[n-min_nc+1,27]-result[n-min_nc,27])   #xu
+          Diff[n-min_nc+1,12]<- ((result[n-min_nc+2,27]-result[n-min_nc+1,27])-(result[n-min_nc+1,27]-result[n-min_nc,27]))   #xu
 
         }
       }
@@ -1759,6 +1807,7 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
     indice.xu<- max(Diff[,12],na.rm = TRUE)
     best.nc<-indice.xu
   }
+
 
   nc.SDbw<-indice.SDbw<-0
   if(is.na(match(20,indice))==FALSE||is.na(match(31,indice))==FALSE)

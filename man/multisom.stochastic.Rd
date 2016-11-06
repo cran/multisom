@@ -36,11 +36,11 @@ multisom.stochastic(data = NULL, xheight = 7, xwidth = 7,
   value of that number; as soon as the neighbourhood gets smaller than
   one only the winning unit will be updated.}
   \item{index}{
-  vector of the index to be calculated. This should be one of : "db","dunn",
-  "silhouette","ptbiserial","ch","cindex","ratkowsky","mcclain","gamma",
-  "gplus","tau","ccc","scott","marriot","trcovw","tracew","friedman",
-  "rubin","ball","sdbw","dindex","hubert","sv","xie-beni","hartigan",
-  "ssi","xu","rayturi","pbm","banfeld","all"(all indices will be used)}
+  vector of the index to be calculated. This should be one of : "db", "dunn",
+  "silhouette", "ptbiserial", "ch", "cindex", "ratkowsky", "mcclain", "gamma",
+  "gplus", "tau", "ccc", "scott", "marriot", "trcovw", "tracew", "friedman",
+  "rubin", "ball", "sdbw", "dindex", "hubert", "sv", "xie-beni", "hartigan",
+  "ssi", "xu", "rayturi", "pbm", "banfeld", "all" (all indices will be used)}
 }
 
 \value{

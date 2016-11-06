@@ -49,12 +49,13 @@ multisom.batch(data= NULL,xheight,xwidth,topo=c("rectangular",
     \code{"ep"}
   }
 \item{index}{
-  vector of the index to be calculated. This should be one of : "db","dunn",
-  "silhouette","ptbiserial","ch","cindex","ratkowsky","mcclain","gamma",
-  "gplus","tau","ccc","scott","marriot","trcovw","tracew","friedman",
-  "rubin","ball","sdbw","dindex","hubert","sv","xie-beni","hartigan",
-  "ssi","xu","rayturi","pbm","banfeld","all"(all indices will be used)}
+  vector of the index to be calculated. This should be one of : "db", "dunn",
+  "silhouette", "ptbiserial", "ch", "cindex", "ratkowsky", "mcclain", "gamma",
+  "gplus", "tau", "ccc", "scott", "marriot", "trcovw", "tracew", "friedman",
+  "rubin", "ball", "sdbw", "dindex", "hubert", "sv", "xie-beni", "hartigan",
+  "ssi", "xu", "rayturi", "pbm", "banfeld", "all" (all indices will be used)}
 }
+
 \details{
 \tabular{ll}{
       \bold{Index}      \tab   \bold{Optimal number of clusters} \cr
@@ -87,7 +88,7 @@ multisom.batch(data= NULL,xheight,xwidth,topo=c("rectangular",
 14. "marriot" or "all"            \tab Max. value of second differences\cr
     (Marriot 1971)                \tab  between levels of the index \cr
 15. "trcovw" or "all"             \tab Max. difference between hierarchy \cr
-    (Milligan and Cooper 1985)    \tab hierarchy levels of the index \cr
+    (Milligan and Cooper 1985)    \tab levels of the index \cr
 16. "tracew" or "all"             \tab Max. value of absolute second \cr
     (Milligan and Cooper 1985)    \tab differences between levels of the index\cr
 17. "friedman" or "all"           \tab Max. difference between hierarchy \cr
@@ -142,20 +143,18 @@ Khanchouch, I., Charrad, M., & Limam, M. (2014). A Comparative Study of Multi-SO
 }
 \examples{
 
-## A 5-dimensional example
+## A 4-dimensional example
 
 set.seed(1)
 
-set.seed(1)
-x<- rbind(matrix(rnorm(150,sd=0.3),ncol=5),
-          matrix(rnorm(150,mean=3,sd=0.2),ncol=5),
-          matrix(rnorm(150,mean=1,sd=0.1),ncol=5),
-          matrix(rnorm(150,mean=6,sd=0.3),ncol=5),
-          matrix(rnorm(150,mean=9,sd=0.3),ncol=5))
+data<-rbind(matrix(rnorm(100,sd=0.3),ncol=2),
+         matrix(rnorm(100,mean=2,sd=0.3),ncol=2),
+         matrix(rnorm(100,mean=4,sd=0.3),ncol=2),
+         matrix(rnorm(100,mean=8,sd=0.3),ncol=2))
 
-res<- multisom.batch(x,xheight= 7, xwidth= 7,"hexagonal",
+res<- multisom.batch(data,xheight= 8, xwidth= 8,"hexagonal",
                 min.radius=0.00010,max.radius=0.002,
-                maxit=1000,"random","gaussian","all")
+                maxit=1000,"random","gaussian","ch")
 
 res$All.index.by.layer
 res$Best.nc
