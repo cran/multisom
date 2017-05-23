@@ -1,9 +1,8 @@
-2cf475b08296ddce51aaa403e46112bf *DESCRIPTION
-d56c73afd1c83c8cfb74cc3d0b056e8b *LICENSE
-858840361fb1c89fc1199babf619e933 *NAMESPACE
+f2d243d6ae0fc967a6a104b7969992bf *DESCRIPTION
+8ca4da4f21214a5cfaae0d2d4e4471bc *NAMESPACE
 a5c020db66515977c02256a67a4193e9 *R/BatchSOM.R
 a74f646a8970e1907a1f5b3c9ef61074 *R/multisom.batch.R
-c2b3146b5eb447888777b9c097ff3aff *R/multisom.stochastic.R
+8605981ef1589704151f65229d91d6c3 *R/multisom.stochastic.R
 9e85281dd36deb2cdc88dfe258575073 *man/BatchSOM.Rd
 6e8108e0feb60c16ccb9e8ea66d0c113 *man/multisom.batch.Rd
-ff54cedc599195458e4448679cbe21f4 *man/multisom.stochastic.Rd
+a2836320a0ce94c5ebbfb9c06079cba5 *man/multisom.stochastic.Rd

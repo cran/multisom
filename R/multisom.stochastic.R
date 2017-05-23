@@ -1,6 +1,7 @@
 multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
                                topo = c("rectangular", "hexagonal"),
-                               rlen = 100,alpha = c(0.05, 0.01),
+                               neighbouhood.fct =c("bubble","gaussian"),
+                               dist.fcts = NULL, rlen = 100,alpha = c(0.05, 0.01),
                                radius = c(2, 1.5, 1.2, 1), index = "all")
 
 {
@@ -10,6 +11,7 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
   min_nc <- 2
   max_nc <- xheight
   dataa<- data
+
 
   indice <- pmatch(index, c("db","dunn","silhouette","ptbiserial","ch","cindex","ratkowsky","mcclain",
                             "gamma","gplus","tau","ccc","scott","marriot","trcovw","tracew","friedman",
@@ -1156,8 +1158,9 @@ multisom.stochastic<- function(data = NULL, xheight = 7, xwidth = 7,
   ###################################################################################
   repeat
   {
-    res.som <- som(data, grid = somgrid(xheight, xwidth,topo),rlen,alpha,radius)
+    res.som <- som(data, grid = somgrid(xheight, xwidth,topo,neighbouhood.fct),rlen,alpha,radius,dist.fcts)
     som_levels <- res.som$codes
+    som_levels <- matrix(unlist(som_levels), ncol = dim(data)[2], byrow = FALSE)
     cl <- res.som$unit.classif
     xf <- cl
     Dist <- dist(data, method="euclidean")
